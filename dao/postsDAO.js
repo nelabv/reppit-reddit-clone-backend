@@ -54,4 +54,47 @@ export default class PostsDAO {
       console.error(`Error in PostsDAO getPostByID: ${e}`);
     }
   }
+
+  static async addPost(_title, _body, _user, _flair) {
+    try {
+      const postDoc = {
+        title: _title,
+        body: _body,
+        user: _user,
+        flair: _flair,
+        datePosted: new Date(),
+        rating: 1,
+        comments: []
+      }
+
+      return await threads.insertOne(postDoc);
+    } catch (e) {
+      console.error(`Error in PostsDAO addPost: ${e}`);
+    }
+  }
+
+  static async upvoteDownvote(rate, id) {
+    let retrievedPost; 
+    const query = {
+      _id: ObjectId(id)
+    };
+
+    try {
+      let data = await threads.find(query);
+      retrievedPost = await data.toArray();
+
+      if (rate === true) {
+        const update = await threads.update(query, {
+          $inc: { rating: 1}
+        })
+      } if (rate === false) {
+        const update = await threads.update(query, {
+          $inc: { rating: -1}
+        })
+      }
+    } catch (e) {
+      console.error(`Error in PostsDAO upvoteDownvote: ${e}`);
+    }
+
+  }
 }
