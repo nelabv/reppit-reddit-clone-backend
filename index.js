@@ -24,7 +24,6 @@ MongoClient.connect(process.env.REDDITCLONE_DB_URI, {
 .then(async client => {
   // vvvv Immediately fetch data from the database once the connection has been established.
   await PostsDAO.initializeDB(client);
-  await PostsDAO.fetchPosts();
 
   app.listen(port, () => { // Specifying the routes made
     console.log(`Listening to the port ${port}`);

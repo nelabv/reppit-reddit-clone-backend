@@ -1,3 +1,6 @@
+import mongodb from "mongodb"
+
+const ObjectId = mongodb.ObjectID;
 let threads;
 
 export default class PostsDAO {
@@ -9,9 +12,7 @@ export default class PostsDAO {
       threads = await conn.db(process.env.REDDITCLONE_NS).collection("posts");
         // Initialize the connection with the specific database above.
     } catch (e) {
-      console.error(
-        `PostsDAO: Unable to connect to the database: ${e}`,
-      )
+      console.error(`Error in PostsDAO initializeDB: ${e}`);
     }
   }
 
@@ -35,7 +36,22 @@ export default class PostsDAO {
       const posts = await cursor.toArray();
       return { posts };
     } catch (e) {
-      console.error(`Error in PostsDAO: Unable to fetch posts: ${e}`);
+      console.error(`Error in PostsDAO fetchPosts: ${e}`);
+    }
+  }
+
+  static async getPostByID(id){
+    let data;
+    const query = {
+      _id : ObjectId(id)
+    }
+
+    try {
+      data = await threads.find(query);
+      const retrievedPost = await data.toArray();
+      return { retrievedPost };
+    } catch(e) {
+      console.error(`Error in PostsDAO getPostByID: ${e}`);
     }
   }
 }
