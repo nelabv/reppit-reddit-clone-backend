@@ -8,6 +8,12 @@ router.route("/:id").get(PostsController.APIgetPostByID);
 
 router
   .route("/posts")
-  .post(PostsController.APIaddPost);
+  .post(PostsController.APIaddPost)
+  .put(PostsController.APIupvoteDownvote)
+  .delete(PostsController.APIdeletePost)
+
+router
+  .route("/comment/:id")
+  .put(PostsController.APIaddComment)
 
 export default router;

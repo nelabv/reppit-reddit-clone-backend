@@ -59,12 +59,39 @@ export default class PostsController {
   static async APIupvoteDownvote(req, res, next) {
     try {
       const rate = req.body.rate;
-      const postId = req.params.id;
+      const postId = req.body.id;
 
       const rating = await PostsDAO.upvoteDownvote(rate, postId);
       
+      res.json({ status: "Vote submitted!" })
     } catch(e) {
       console.error(`Error in PostsController APIupvoteDownvote: ${e}`);
+    }
+  }
+
+  static async APIdeletePost(req, res, next) {
+    try {
+      const postID = req.body.postID;
+      const userID = req.body.user;
+
+      const deletePost = await PostsDAO.deletePost(postID, userID);
+
+      res.json({ status: "Post deleted!"});
+    } catch(e) {
+      console.error(`Error in PostsController APIdeletePost: ${e}`);
+    }
+  }
+
+  static async APIaddComment(req, res, next) {
+    try {
+      const post = req.params.id;
+      const user = req.body.username;
+      const commentBody = req.body.comment;
+
+      const addComment = await PostsDAO.addComment(post, user, commentBody);
+      res.json({ status: "Comment submitted!"});
+    } catch(e) {
+      console.error(`Error in PostsController APIaddComment: ${e}`);
     }
   }
 }

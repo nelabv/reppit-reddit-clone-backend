@@ -97,4 +97,35 @@ export default class PostsDAO {
     }
 
   }
+
+  static async deletePost(postId, userId) {
+    try {
+      const deletePost = await threads.deleteOne({
+        _id: ObjectId(postId),
+        user: userId
+      })
+      return deletePost;
+    } catch(e) {
+      console.error(`Error in PostsDAO deletePost: ${e}`);
+    }
+  }
+
+  static async addComment(postId, _username, _body) {
+    try {
+      const commentDoc = {
+        user: _username,
+        body: _body,
+        date: new Date()
+      }
+
+      const addCommentReq = await threads.update(
+        { _id: ObjectId(postId) },
+        { $push: { comments: commentDoc } }
+      )
+
+      return addCommentReq;
+    } catch(e) {
+      console.error(`Error in PostsDAO addComment: ${e}`);
+    }
+  }
 }
