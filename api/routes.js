@@ -1,5 +1,6 @@
 import express from "express";
 import PostsController from "./posts.controller.js";
+import UsersController from "./users.controller.js";
 
 const router = express.Router();
 
@@ -15,5 +16,9 @@ router
 router
   .route("/comment/:id")
   .put(PostsController.APIaddComment)
+
+router 
+  .route("/register")
+  .post(UsersController.APIregisterUser)
 
 export default router;
