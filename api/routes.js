@@ -21,4 +21,8 @@ router
   .route("/register")
   .post(UsersController.APIregisterUser)
 
+router
+  .route("/login")
+  .post(UsersController.APIlogin)
+
 export default router;

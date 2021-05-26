@@ -1,3 +1,4 @@
+import { response } from "express";
 import mongodb from "mongodb"
 
 const ObjectId = mongodb.ObjectID;
@@ -17,9 +18,23 @@ export default class UsersDAO {
 
   static async registerUser(userDetails) {
     try {
-      return await usersCollection.insertOne(userDetails);
+      const checkUsername = await usersCollection.countDocuments({ username: userDetails.username});
+      
+      if(checkUsername === 1) {
+        return checkUsername;
+      } else {
+        return await usersCollection.insertOne(userDetails);
+      }      
     } catch(e) {
       console.error(`Error in UsersDAO registerUser: ${e}`);
     }
+  }
+
+  static async login(_username, _password) {
+
+    // progress: able to find number of usernames that exists in the database
+    const databaseCall = await usersCollection.countDocuments({ username: _username});
+
+    return {databaseCall};
   }
 }
