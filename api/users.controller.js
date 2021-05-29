@@ -1,5 +1,6 @@
 import UsersDAO from "../dao/usersDAO.js";
 import bcrypt from "bcrypt";
+import { response } from "express";
 
 export default class UsersController {
   static async APIregisterUser(req, res) {
@@ -31,12 +32,28 @@ export default class UsersController {
     }
   }
 
-  static async APIlogin(req, res) {
+  static async APIauthenticate(req, res) {
     const username = req.body.username;
     const password = req.body.password;
 
-    const databaseCall = await UsersDAO.login(username, password);
+    const databaseResponse = await UsersDAO.checkUser(username, password);
 
-    return databaseCall;
+    if (databaseResponse === false) {
+      res.status(400).json({
+        error: "User not found!"
+      })
+    } else { 
+      const passwordValidity = await UsersDAO.checkPassword(username, password);
+      
+      if (passwordValidity === false) {
+        res.status(400).json({
+          error: "Password incorrect!"
+        })
+      } else {
+        res.status(200).json({
+          status: "Logged in!"
+        })
+      }
+    }
   }
 }

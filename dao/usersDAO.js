@@ -1,5 +1,6 @@
+import bcrypt, { hash } from "bcrypt";
 import { response } from "express";
-import mongodb from "mongodb"
+import mongodb from "mongodb";
 
 const ObjectId = mongodb.ObjectID;
 let usersCollection;
@@ -30,11 +31,36 @@ export default class UsersDAO {
     }
   }
 
-  static async login(_username, _password) {
-
-    // progress: able to find number of usernames that exists in the database
-    const databaseCall = await usersCollection.countDocuments({ username: _username});
-
-    return {databaseCall};
+  static async checkUser(_username, _password) {
+    const query = { username: _username};
+    
+    const cursor = await usersCollection.find(query);
+    const response = await cursor.toArray();
+    if (response.length === 0) {
+      return false;
+    } else {
+      return true;
+    }
   }
+
+  static async checkPassword(_username, _password) {
+    const query = { username: _username};
+    const userData = await usersCollection.find(query).toArray();
+
+    function compareAsync(password, hashedPW) {
+      return new Promise(function(resolve, reject) {
+        bcrypt.compare(password, hashedPW, function(error, result) {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        });
+      });
+    }
+  
+    const res = await compareAsync(_password, userData[0].password);
+    return res;
+  }
+  
 }
