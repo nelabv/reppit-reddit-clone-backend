@@ -1,6 +1,7 @@
 import bcrypt, { hash } from "bcrypt";
-import { response } from "express";
+import jwt from "jsonwebtoken";
 import mongodb from "mongodb";
+import { response } from "express";
 
 const ObjectId = mongodb.ObjectID;
 let usersCollection;
@@ -31,7 +32,7 @@ export default class UsersDAO {
     }
   }
 
-  static async checkUser(_username, _password) {
+  static async validateUser(_username, _password) {
     const query = { username: _username};
     
     const cursor = await usersCollection.find(query);
@@ -43,24 +44,52 @@ export default class UsersDAO {
     }
   }
 
-  static async checkPassword(_username, _password) {
+  static async validatePassword(_username, _password) {
     const query = { username: _username};
     const userData = await usersCollection.find(query).toArray();
 
-    function compareAsync(password, hashedPW) {
+    function checkPassword(password, hashedPW) {
       return new Promise(function(resolve, reject) {
         bcrypt.compare(password, hashedPW, function(error, result) {
           if (error) {
             reject(error);
+            return false;
           } else {
             resolve(result);
+            return true;
           }
         });
       });
     }
   
-    const res = await compareAsync(_password, userData[0].password);
+    const res = await checkPassword(_password, userData[0].password);
     return res;
   }
-  
+
+  static async grantAccess(_username) {
+    const user = {
+      username: _username,
+      date: new Date()
+    }
+
+    function generateToken(_user) {
+      return new Promise( function(resolve, reject) {
+        jwt.sign(
+          { user },
+          process.env.SECRET_KEY,
+          { expiresIn: '1hr'},
+          (err, token) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(token);
+            }
+          }
+        )
+      });
+    }
+
+    const token = await generateToken(user);
+    return token;
+  }
 }

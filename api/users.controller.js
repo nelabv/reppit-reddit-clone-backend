@@ -32,28 +32,31 @@ export default class UsersController {
     }
   }
 
-  static async APIauthenticate(req, res) {
+  static async APIsignIn(req, res) {
     const username = req.body.username;
     const password = req.body.password;
 
-    const databaseResponse = await UsersDAO.checkUser(username, password);
+    UsersDAO.validateUser(username, password).then(async function(result){
 
-    if (databaseResponse === false) {
-      res.status(400).json({
-        error: "User not found!"
-      })
-    } else { 
-      const passwordValidity = await UsersDAO.checkPassword(username, password);
-      
-      if (passwordValidity === false) {
-        res.status(400).json({
-          error: "Password incorrect!"
+      if (result === false) {
+        res.json({
+          error: "User not found!"
         })
-      } else {
-        res.status(200).json({
-          status: "Logged in!"
-        })
+      } else if (result === true) {
+        const passwordValidity = await UsersDAO.validatePassword(username, password);
+  
+        if (passwordValidity === false) {
+          res.status(400).json({
+            error: "Incorrect password!"
+          })
+        } else if (passwordValidity === true) {
+          const token = await UsersDAO.grantAccess(username);
+          res.status(200).json({
+            status: "success",
+            token
+          })
+        }
       }
-    }
+    })
   }
 }

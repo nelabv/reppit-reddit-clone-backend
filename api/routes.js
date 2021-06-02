@@ -23,6 +23,6 @@ router
 
 router
   .route("/login")
-  .post(UsersController.APIauthenticate)
+  .post(UsersController.APIsignIn)
 
 export default router;

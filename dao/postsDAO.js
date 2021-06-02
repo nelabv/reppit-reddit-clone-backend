@@ -30,9 +30,7 @@ export default class PostsDAO {
     let cursor; 
     
     try {
-      // Write the queries here if there is a query
       cursor = await threads.find(query);
-      // Leave the .find() parameter blank if there is no query
       const posts = await cursor.toArray();
       return { posts };
     } catch (e) {
