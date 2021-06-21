@@ -1,7 +1,6 @@
-import bcrypt, { hash } from "bcrypt";
+import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import mongodb from "mongodb";
-import { response } from "express";
 
 const ObjectId = mongodb.ObjectID;
 let usersCollection;
@@ -91,5 +90,44 @@ export default class UsersDAO {
 
     const token = await generateToken(user);
     return token;
+  }
+
+  // -----------------------------
+
+  static async checkIfUserVoted (user, _postId) {
+    const cursor = await usersCollection.find({username: user});
+    const userData = await cursor.toArray();
+    const ratedPosts = userData[0].ratedPosts;
+
+    return ratedPosts.some(rated => rated.post === _postId);
+  }
+
+  static async addRatingToUserData(user, postID, rating){
+    usersCollection.updateOne(
+      { username: user},
+      { $push: {
+          ratedPosts : {
+            post: postID,
+            rate: rating
+          }
+        }
+      }
+    )
+  }
+
+  // testing
+
+  static async registerUserTEST(userDetails) {
+    try {
+      const checkUsername = await usersCollection.countDocuments({ username: userDetails.username});
+      
+      if(checkUsername === 1) {
+        return checkUsername;
+      } else {
+        return await usersCollection.insertOne(userDetails);
+      }      
+    } catch(e) {
+      console.error(`Error in UsersDAO registerUser: ${e}`);
+    }
   }
 }

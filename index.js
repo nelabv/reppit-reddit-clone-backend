@@ -6,6 +6,7 @@ import mongodb from "mongodb";
 import dotenv from "dotenv";
 import PostsDAO from "./dao/postsDAO.js";
 import UsersDAO from "./dao/usersDAO.js";
+import PostsCheckers from "./dao/postsDAO_checker_functions.js";
 dotenv.config();
 
 const MongoClient = mongodb.MongoClient;
@@ -25,6 +26,7 @@ MongoClient.connect(process.env.REDDITCLONE_DB_URI, {
 .then(async client => {
   // vvvv Immediately fetch data from the database once the connection has been established.
   await PostsDAO.initializeDB(client);
+  await PostsCheckers.initializeDB(client);
   await UsersDAO.initializeDB(client);
 
   app.listen(port, () => { // Specifying the routes made

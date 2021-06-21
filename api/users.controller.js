@@ -1,6 +1,6 @@
 import UsersDAO from "../dao/usersDAO.js";
 import bcrypt from "bcrypt";
-import { response } from "express";
+import User from "../model/user.js";
 
 export default class UsersController {
   static async APIregisterUser(req, res) {
@@ -9,10 +9,11 @@ export default class UsersController {
         if (error) {
           console.error(`Error in hashing password: ${e}`);
         } else {
-          const user = {
+          const user = new User({
             username: req.body.username,
-            password: hash
-          }
+            password: hash,
+            dateCreated: new Date()
+          });
 
           const response = await UsersDAO.registerUser(user);
 
@@ -37,11 +38,8 @@ export default class UsersController {
     const password = req.body.password;
 
     UsersDAO.validateUser(username, password).then(async function(result){
-
       if (result === false) {
-        res.json({
-          error: "User not found!"
-        })
+        res.status(400).json({ error: "User not found!" });
       } else if (result === true) {
         const passwordValidity = await UsersDAO.validatePassword(username, password);
   

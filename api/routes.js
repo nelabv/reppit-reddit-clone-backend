@@ -1,28 +1,33 @@
 import express from "express";
+import Utility from "./utils.js";
 import PostsController from "./posts.controller.js";
 import UsersController from "./users.controller.js";
 
 const router = express.Router();
 
-router.route("/").get(PostsController.APIgetPosts);
-router.route("/:id").get(PostsController.APIgetPostByID);
+router.route("/categories")
+  .get(PostsController.APIgetCategories)
 
-router
-  .route("/posts")
-  .post(PostsController.APIaddPost)
-  .put(PostsController.APIupvoteDownvote)
-  .delete(PostsController.APIdeletePost)
+router.route("/posts-category")
+  .get(PostsController.APIgetPostsByCategory)
 
-router
-  .route("/comment/:id")
-  .put(PostsController.APIaddComment)
+router.route("/")
+  .get(PostsController.APIgetPosts);
+router.route("/:id")
+  .get(Utility.verifyToken, PostsController.APIgetPostByID);
 
-router 
-  .route("/register")
+router.route("/posts")
+  .post(Utility.verifyToken, PostsController.APIaddPost) 
+  .put(Utility.verifyAndPassData, PostsController.APIcastVote)
+  .delete(Utility.verifyToken, PostsController.APIdeletePost)
+
+router.route("/comment/:id") 
+  .put(Utility.verifyAndPassData, PostsController.APIaddComment)
+
+router.route("/register")
   .post(UsersController.APIregisterUser)
 
-router
-  .route("/login")
+router.route("/login")
   .post(UsersController.APIsignIn)
 
 export default router;

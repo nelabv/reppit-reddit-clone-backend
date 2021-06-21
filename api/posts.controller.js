@@ -1,4 +1,6 @@
 import PostsDAO from "../dao/postsDAO.js";
+import UsersDAO from "../dao/usersDAO.js";
+import Post from "../model/post.js";
 
 export default class PostsController {
   static async APIgetPosts(req, res, next) {
@@ -22,6 +24,30 @@ export default class PostsController {
     }
   }
 
+  static async APIgetPostsByCategory(req, res, next) {
+    try {    
+      const category = req.body.category;
+
+      const results = await PostsDAO.getPostsByCategory(category);
+
+      res.json({
+        results
+      })
+    } catch (e) {
+      console.log(`Error in PostsController APIsetCategories: ${e}`);
+    }
+  }
+  
+  static async APIgetCategories(req, res, next) {
+    try {
+      let categories = await PostsDAO.getCategories();
+      res.json(categories);
+    } catch (e) {
+      console.log(`Error in PostsController APIgetCategories: ${e}`)
+      res.status(500).json({ error: e });
+    }
+  }
+
   static async APIgetPostByID(req, res, next) {
     try {
       const postID = req.params.id;
@@ -41,40 +67,58 @@ export default class PostsController {
 
   static async APIaddPost(req, res, next) {
     try {
-      const title = req.body.title;
-      const _body = req.body.body;
-      const user = req.body.user_name;
-      const flair = req.body.flair;
+      const newPost = new Post({
+        title: req.body.title,
+        author: req.body.username,
+        body: req.body.body,
+        datePosted: new Date(),
+        category: req.body.flair,
+        comments: [],
+        votes: {
+          totalVoteCount: 0, 
+          upvotes: [],
+          downvotes: []
+        }
+      })
 
-      const PostDocument = await PostsDAO.addPost(
-        title, _body, user, flair
-      )
+      const PostDocument = await PostsDAO.addPost(newPost);
 
-      res.json({ status: "Post submitted!"});
+      res.json({
+        status: "Post submitted!",
+        PostDocument
+      });
     } catch (e) {
       console.error(`Error in PostsController APIaddPost: ${e}`);
     }
   }
 
-  static async APIupvoteDownvote(req, res, next) {
-    try {
-      const rate = req.body.rate;
-      const postId = req.body.id;
+/*   static async APIupvoteDownvote(userData, req, res, next) {
+    const rate = req.body.rate;
+    const postId = req.body.id;
+    const username = userData.user.username;
+    const checker = await UsersDAO.checkIfUserVoted(username, req.body.id);
 
-      const rating = await PostsDAO.upvoteDownvote(rate, postId);
-      
-      res.json({ status: "Vote submitted!" })
-    } catch(e) {
-      console.error(`Error in PostsController APIupvoteDownvote: ${e}`);
+    if (checker === false) {
+      try {
+        const rating = await PostsDAO.upvoteDownvote(rate, postId);
+  
+        const updateUserData = await UsersDAO.addRatingToUserData(username, postId, rate);
+        res.json({ status: "Vote submitted!" })
+      } catch(e) {
+        console.error(`Error in PostsController APIupvoteDownvote: ${e}`);
+      }
+    } else {
+      res.status(400).json({
+        error: "Already voted!"
+      })
     }
-  }
+  } */
 
   static async APIdeletePost(req, res, next) {
     try {
       const postID = req.body.postID;
-      const userID = req.body.user;
 
-      const deletePost = await PostsDAO.deletePost(postID, userID);
+      const deletePost = await PostsDAO.deletePost(postID);
 
       res.json({ status: "Post deleted!"});
     } catch(e) {
@@ -82,16 +126,28 @@ export default class PostsController {
     }
   }
 
-  static async APIaddComment(req, res, next) {
+  static async APIaddComment(userData, req, res, next) {
     try {
-      const post = req.params.id;
-      const user = req.body.username;
-      const commentBody = req.body.comment;
+      const commentDocument = {
+        user: userData.user.username,
+        body: req.body.body,
+        date: new Date() 
+      }
 
-      const addComment = await PostsDAO.addComment(post, user, commentBody);
+      const addComment = await PostsDAO.addComment(commentDocument, req.body.postID);
       res.json({ status: "Comment submitted!"});
     } catch(e) {
       console.error(`Error in PostsController APIaddComment: ${e}`);
     }
+  }
+
+  static async APIcastVote(userData, req, res, next) {
+    const postID = req.body.id;
+    const vote = req.body.vote;
+    const user = userData.user.username;
+
+    const results = await PostsDAO.castVote(postID, user, vote);
+
+    res.json({results});
   }
 }

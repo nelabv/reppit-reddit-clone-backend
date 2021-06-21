@@ -1,4 +1,5 @@
-import mongodb from "mongodb"
+import mongodb from "mongodb";
+import Utility from "../api/utils.js";
 
 const ObjectId = mongodb.ObjectID;
 let threads;
@@ -10,9 +11,32 @@ export default class PostsDAO {
     }
     try {
       threads = await conn.db(process.env.REDDITCLONE_NS).collection("posts");
-        // Initialize the connection with the specific database above.
     } catch (e) {
       console.error(`Error in PostsDAO initializeDB: ${e}`);
+    }
+  }
+
+  static async getPostsByCategory(_category) {
+    let data;
+    const query = { "category": { $eq: _category }}
+
+    try {
+      data = await threads.find(query);
+      const response = await data.toArray();
+      return response;
+    } catch(e) {
+      console.error(`Error in PostsDAO getPostByID: ${e}`);
+    }
+  }
+
+  static async getCategories() {
+    let categories = [];
+    try {
+      categories = await threads.distinct("category");
+      return categories;
+    } catch (e) {
+      console.error(`Error in PostsDAO getCategories: ${e}`)
+      return categories;
     }
   }
 
@@ -53,26 +77,77 @@ export default class PostsDAO {
     }
   }
 
-  static async addPost(_title, _body, _user, _flair) {
+  static async castVote(postID, username, vote) {
+    let array; 
     try {
-      const postDoc = {
-        title: _title,
-        body: _body,
-        user: _user,
-        flair: _flair,
-        datePosted: new Date(),
-        rating: 1,
-        comments: []
+      if (vote === true) {
+        array = "upvotes"
+      } else if (vote === false) {
+        array = "downvotes"
       }
+    } catch (error) {
+      console.log(`Error in PostsDAO, unable to assign variable: ${error}`);
+    }
 
-      return await threads.insertOne(postDoc);
+    const upvotesSearch = await threads.find({ 
+      _id: ObjectId(postID),
+      "votes.upvotes": username 
+    }).toArray();
+
+    const downvotesSearch = await threads.find({ 
+      _id: ObjectId(postID),
+      "votes.downvotes": username 
+    }).toArray();
+    
+    if (upvotesSearch.length > 0) {
+      threads.updateOne(
+        { _id: ObjectId(postID)}, 
+        { $pull: { "votes.upvotes" : username } }
+      )
+    } else if (downvotesSearch.length > 0) {
+      threads.updateOne(
+        { _id: ObjectId(postID)}, 
+        { $pull: { "votes.downvotes" : username } }
+      )
+    }
+
+    const castVote = await threads.updateOne(
+      { _id: ObjectId(postID)}, 
+      { $push: { [`votes.${array}`] : username } }
+    ) 
+
+    Utility.updateTotalCount(postID, threads);
+    
+    return castVote;
+  }
+
+  static async addPost(newPost) {
+    try {
+      const newlyAddedPost = await threads.insertOne(newPost, async function (error, result) {
+        if (error) {
+          console.log(error);
+        } else {
+          const postId = result.ops[0]._id;
+          const author = result.ops[0].author;
+
+          threads.updateOne(
+            { _id: ObjectId(postId)}, 
+            
+            { $inc : {"votes.totalVoteCount" : 1},
+            $push: { "votes.upvotes" : author } }
+          )
+
+          Utility.updateTotalCount(postId, threads);
+        }
+      });
+      return newlyAddedPost;
     } catch (e) {
       console.error(`Error in PostsDAO addPost: ${e}`);
     }
   }
 
   static async upvoteDownvote(rate, id) {
-    let retrievedPost; 
+    let retrievedPost;
     const query = {
       _id: ObjectId(id)
     };
@@ -82,11 +157,11 @@ export default class PostsDAO {
       retrievedPost = await data.toArray();
 
       if (rate === true) {
-        const update = await threads.update(query, {
+        const update = await threads.updateOne(query, {
           $inc: { rating: 1}
         })
       } if (rate === false) {
-        const update = await threads.update(query, {
+        const update = await threads.updateOne(query, {
           $inc: { rating: -1}
         })
       }
@@ -108,15 +183,9 @@ export default class PostsDAO {
     }
   }
 
-  static async addComment(postId, _username, _body) {
+  static async addComment(commentDoc, postId) {
     try {
-      const commentDoc = {
-        user: _username,
-        body: _body,
-        date: new Date()
-      }
-
-      const addCommentReq = await threads.update(
+      const addCommentReq = await threads.updateOne(
         { _id: ObjectId(postId) },
         { $push: { comments: commentDoc } }
       )
