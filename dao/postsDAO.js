@@ -81,9 +81,9 @@ export default class PostsDAO {
     let array; 
     try {
       if (vote === true) {
-        array = "upvotes"
+        array = "upvotes";
       } else if (vote === false) {
-        array = "downvotes"
+        array = "downvotes";
       }
     } catch (error) {
       console.log(`Error in PostsDAO, unable to assign variable: ${error}`);
@@ -102,23 +102,32 @@ export default class PostsDAO {
     if (upvotesSearch.length > 0) {
       threads.updateOne(
         { _id: ObjectId(postID)}, 
-        { $pull: { "votes.upvotes" : username } }
+        { $pull: { "votes.upvotes" : username }}
       )
     } else if (downvotesSearch.length > 0) {
       threads.updateOne(
         { _id: ObjectId(postID)}, 
-        { $pull: { "votes.downvotes" : username } }
+        { $pull: { "votes.downvotes" : username }}
       )
     }
 
-    const castVote = await threads.updateOne(
-      { _id: ObjectId(postID)}, 
-      { $push: { [`votes.${array}`] : username } }
-    ) 
+    if (array === "downvotes") {
+      threads.updateOne(
+        { _id: ObjectId(postID)}, 
+        { $push: { [`votes.${array}`] : username },
+          $inc: {[`votes.totalVoteCount`]: -1} }
+      ) 
+    } else if (array === "upvotes") {
+      threads.updateOne(
+        { _id: ObjectId(postID)}, 
+        { $push: { [`votes.${array}`] : username },
+          $inc: {[`votes.totalVoteCount`]: 1} }
+      ) 
+    }
 
-    Utility.updateTotalCount(postID, threads);
+    //Utility.updateTotalCount(postID, threads);
     
-    return castVote;
+    return;
   }
 
   static async addPost(newPost) {
@@ -130,14 +139,12 @@ export default class PostsDAO {
           const postId = result.ops[0]._id;
           const author = result.ops[0].author;
 
-          threads.updateOne(
+          await threads.updateOne(
             { _id: ObjectId(postId)}, 
             
             { $inc : {"votes.totalVoteCount" : 1},
             $push: { "votes.upvotes" : author } }
           )
-
-          Utility.updateTotalCount(postId, threads);
         }
       });
       return newlyAddedPost;

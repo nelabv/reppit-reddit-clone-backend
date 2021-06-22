@@ -56,6 +56,7 @@ export default class Utility {
 
     const voteCount = numberOfUpvotes - numberOfDownvotes;
 
+    console.log("-----------------------------------");
     console.log("UPVOTES LENGTH: ", numberOfUpvotes);
     console.log("DOWNVOTES LENGTH: ", numberOfDownvotes);
     console.log("VOTE COUNT: ", voteCount);
