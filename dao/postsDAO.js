@@ -11,6 +11,8 @@ export default class PostsDAO {
     }
     try {
       threads = await conn.db(process.env.REDDITCLONE_NS).collection("posts");
+      //threads.deleteMany({})
+
     } catch (e) {
       console.error(`Error in PostsDAO initializeDB: ${e}`);
     }
@@ -124,33 +126,33 @@ export default class PostsDAO {
           $inc: {[`votes.totalVoteCount`]: 1} }
       ) 
     }
-
-    //Utility.updateTotalCount(postID, threads);
     
     return;
   }
 
   static async addPost(newPost) {
-    try {
-      const newlyAddedPost = await threads.insertOne(newPost, async function (error, result) {
-        if (error) {
-          console.log(error);
-        } else {
-          const postId = result.ops[0]._id;
-          const author = result.ops[0].author;
+    function handleSubmit(_newPost) {
+      return new Promise (function(resolve, reject) {
+        threads.insertOne(newPost, function(error, result) {
+          if (error) {
+            reject();
+          } else {
+            const postId = result.ops[0]._id;
+            const author = result.ops[0].author;
 
-          await threads.updateOne(
-            { _id: ObjectId(postId)}, 
-            
-            { $inc : {"votes.totalVoteCount" : 1},
-            $push: { "votes.upvotes" : author } }
-          )
-        }
-      });
-      return newlyAddedPost;
-    } catch (e) {
-      console.error(`Error in PostsDAO addPost: ${e}`);
+            threads.updateOne(
+              { _id: ObjectId(postId)}, 
+              { $inc : {"votes.totalVoteCount" : 1},
+              $push: { "votes.upvotes" : author } }
+            );
+            resolve(postId);
+          }
+        })
+      })
     }
+
+    const id = await handleSubmit(newPost);
+    return id;
   }
 
   static async upvoteDownvote(rate, id) {

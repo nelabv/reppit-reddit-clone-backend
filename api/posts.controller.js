@@ -82,37 +82,15 @@ export default class PostsController {
       })
 
       const PostDocument = await PostsDAO.addPost(newPost);
-
+      
       res.json({
         status: "Post submitted!",
-        PostDocument
+        id: PostDocument
       });
     } catch (e) {
       console.error(`Error in PostsController APIaddPost: ${e}`);
     }
   }
-
-/*   static async APIupvoteDownvote(userData, req, res, next) {
-    const rate = req.body.rate;
-    const postId = req.body.id;
-    const username = userData.user.username;
-    const checker = await UsersDAO.checkIfUserVoted(username, req.body.id);
-
-    if (checker === false) {
-      try {
-        const rating = await PostsDAO.upvoteDownvote(rate, postId);
-  
-        const updateUserData = await UsersDAO.addRatingToUserData(username, postId, rate);
-        res.json({ status: "Vote submitted!" })
-      } catch(e) {
-        console.error(`Error in PostsController APIupvoteDownvote: ${e}`);
-      }
-    } else {
-      res.status(400).json({
-        error: "Already voted!"
-      })
-    }
-  } */
 
   static async APIdeletePost(req, res, next) {
     try {
