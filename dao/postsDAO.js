@@ -81,6 +81,7 @@ export default class PostsDAO {
 
   static async castVote(postID, username, vote) {
     let array; 
+
     try {
       if (vote === true) {
         array = "upvotes";
@@ -101,30 +102,32 @@ export default class PostsDAO {
       "votes.downvotes": username 
     }).toArray();
     
-    if (upvotesSearch.length > 0) {
+    if ((upvotesSearch.length > 0 && vote === true) || (downvotesSearch.length > 0 && vote === false)) { 
+      console.log("Vote already exists. System will not do anything.");
+    } else if (upvotesSearch.length > 0 && vote !== true) {
       threads.updateOne(
         { _id: ObjectId(postID)}, 
-        { $pull: { "votes.upvotes" : username }}
-      )
-    } else if (downvotesSearch.length > 0) {
-      threads.updateOne(
-        { _id: ObjectId(postID)}, 
-        { $pull: { "votes.downvotes" : username }}
-      )
-    }
-
-    if (array === "downvotes") {
-      threads.updateOne(
-        { _id: ObjectId(postID)}, 
-        { $push: { [`votes.${array}`] : username },
-          $inc: {[`votes.totalVoteCount`]: -1} }
+        { 
+          $pull: { "votes.upvotes" : username },
+          $push: { "votes.downvotes" : username }
+        }
       ) 
-    } else if (array === "upvotes") {
+    } else if (downvotesSearch.length > 0 && vote !== false) {
       threads.updateOne(
         { _id: ObjectId(postID)}, 
-        { $push: { [`votes.${array}`] : username },
-          $inc: {[`votes.totalVoteCount`]: 1} }
+        { 
+          $pull: { "votes.downvotes" : username },
+          $push: { "votes.upvotes" : username }
+        }
       ) 
+    } else {
+      threads.updateOne(
+        { _id: ObjectId(postID)}, 
+        { 
+          $push: { [`votes.${array}`] : username },
+          $inc: {[`votes.totalVoteCount`]: 1}
+        }
+      )
     }
     
     return;
