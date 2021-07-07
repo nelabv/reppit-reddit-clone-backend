@@ -14,8 +14,8 @@ export default class PostsController {
       const _results = await PostsDAO.fetchPosts({filters});
 
       let response = {
-        contents: _results,
-        filters: filters
+        filters: filters,
+        contents: _results
       }
 
       res.json(response);
@@ -33,15 +33,21 @@ export default class PostsController {
       res.json({
         results
       })
-    } catch (e) {
-      console.log(`Error in PostsController APIsetCategories: ${e}`);
+    } catch (err) {
+      console.log(`Error in PostsController APIsetCategories: ${err}`);
+
+      res.status(400).json({
+        error: err
+      })
     }
   }
   
   static async APIgetCategories(req, res, next) {
     try {
       let categories = await PostsDAO.getCategories();
-      res.json(categories);
+      res.status(200).json({
+        categories
+      });
     } catch (e) {
       console.log(`Error in PostsController APIgetCategories: ${e}`)
       res.status(500).json({ error: e });
@@ -59,7 +65,7 @@ export default class PostsController {
           id: postID
         });
       }
-      res.json(post);
+      res.status(200).json(post);
     } catch (e) {
       console.error(`Error in PostsController APIgetPostByID: ${e}`);
     }
@@ -83,12 +89,16 @@ export default class PostsController {
 
       const PostDocument = await PostsDAO.addPost(newPost);
       
-      res.json({
+      res.status(200).json({
         status: "Post submitted!",
         id: PostDocument
       });
-    } catch (e) {
-      console.error(`Error in PostsController APIaddPost: ${e}`);
+    } catch (err) {
+      console.error(`Error in PostsController APIaddPost: ${err}`);
+
+      res.status(400).json({
+        error: err
+      })
     }
   }
 
@@ -98,9 +108,13 @@ export default class PostsController {
 
       const deletePost = await PostsDAO.deletePost(postID);
 
-      res.json({ status: "Post deleted!"});
-    } catch(e) {
-      console.error(`Error in PostsController APIdeletePost: ${e}`);
+      res.status(200).json({ status: "Post deleted!"});
+    } catch(err) {
+      console.error(`Error in PostsController APIdeletePost: ${err}`);
+      
+      res.status(400).json({
+        error: `Unable to delete post: ${err}`
+      })
     }
   }
 
@@ -120,12 +134,18 @@ export default class PostsController {
   }
 
   static async APIcastVote(userData, req, res, next) {
-    const postID = req.body.id;
-    const vote = req.body.vote;
-    const user = userData.user.username;
-
-    const results = await PostsDAO.castVote(postID, user, vote);
-
-    res.json({results});
+    try {
+      const postID = req.body.id;
+      const vote = req.body.vote;
+      const user = userData.user.username;
+  
+      const results = await PostsDAO.castVote(postID, user, vote);
+      
+      res.json(results);
+    } catch (err) {
+      res.status(400).json({
+        error: `Error in PostsController APIcastVote: Unable to cast vote: ${err}`
+      })
+    }
   }
 }

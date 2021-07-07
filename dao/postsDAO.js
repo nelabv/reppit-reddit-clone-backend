@@ -1,3 +1,4 @@
+import { response } from "express";
 import mongodb from "mongodb";
 import Utility from "../api/utils.js";
 
@@ -24,18 +25,18 @@ export default class PostsDAO {
 
     try {
       data = await threads.find(query);
-      const response = await data.toArray();
-      return response;
+      return await data.toArray();
     } catch(e) {
       console.error(`Error in PostsDAO getPostByID: ${e}`);
     }
   }
 
   static async getCategories() {
-    let categories = [];
+    let response = [];
+    
     try {
-      categories = await threads.distinct("category");
-      return categories;
+      return await threads.distinct("category");
+      //return response;
     } catch (e) {
       console.error(`Error in PostsDAO getCategories: ${e}`)
       return categories;
@@ -57,8 +58,7 @@ export default class PostsDAO {
     
     try {
       cursor = await threads.find(query);
-      const posts = await cursor.toArray();
-      return { posts };
+      return await cursor.toArray();
     } catch (e) {
       console.error(`Error in PostsDAO fetchPosts: ${e}`);
     }
@@ -89,21 +89,35 @@ export default class PostsDAO {
         array = "downvotes";
       }
     } catch (error) {
-      console.log(`Error in PostsDAO, unable to assign variable: ${error}`);
+      console.log(`Error in PostsDAO castVote: Unable to assign variable: ${error}`);
     }
 
-    const upvotesSearch = await threads.find({ 
-      _id: ObjectId(postID),
-      "votes.upvotes": username 
-    }).toArray();
 
-    const downvotesSearch = await threads.find({ 
-      _id: ObjectId(postID),
-      "votes.downvotes": username 
-    }).toArray();
-    
+    let upvotesSearch;
+    let downvotesSearch;
+
+    try {
+      upvotesSearch = await threads.find({ 
+        _id: ObjectId(postID),
+        "votes.upvotes": username 
+      }).toArray();
+  
+      downvotesSearch = await threads.find({ 
+        _id: ObjectId(postID),
+        "votes.downvotes": username 
+      }).toArray();
+    } catch (err) {
+      console.log(`Error in PostsDAO castVote: ${err}`);
+    }
+
+    let response;
+    // Check if user has voted the same vote already
     if ((upvotesSearch.length > 0 && vote === true) || (downvotesSearch.length > 0 && vote === false)) { 
-      console.log("Vote already exists. System will not do anything.");
+      response = {
+        status: "duplicate",
+        message: "DUPLICATE: User has voted the same vote on the same post. No changes were made."
+      }
+      return response;
     } else if (upvotesSearch.length > 0 && vote !== true) {
       threads.updateOne(
         { _id: ObjectId(postID)}, 
@@ -112,14 +126,27 @@ export default class PostsDAO {
           $push: { "votes.downvotes" : username }
         }
       ) 
-    } else if (downvotesSearch.length > 0 && vote !== false) {
+      response = {
+        status: "change vote",
+        message: "VOTE CHANGE ( + to - ): User has existing record but requested to change vote."
+      }
+      return response;
+    } 
+    
+    
+    else if (downvotesSearch.length > 0 && vote !== false) {
       threads.updateOne(
         { _id: ObjectId(postID)}, 
         { 
           $pull: { "votes.downvotes" : username },
           $push: { "votes.upvotes" : username }
         }
-      ) 
+      )  
+      response = {
+        status: "change vote",
+        message: "VOTE CHANGE ( - to + ): User has existing record but requested to change vote."
+      }
+      return response;
     } else {
       threads.updateOne(
         { _id: ObjectId(postID)}, 
@@ -128,9 +155,14 @@ export default class PostsDAO {
           $inc: {[`votes.totalVoteCount`]: 1}
         }
       )
+      response = {
+        status: "added record",
+        message: "RECORD ADDED: User has no existing record on this post. Added user to votes array successfully."
+      }
+      return response;
     }
     
-    return;
+  
   }
 
   static async addPost(newPost) {
