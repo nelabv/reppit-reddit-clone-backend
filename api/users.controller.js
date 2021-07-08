@@ -53,6 +53,8 @@ export default class UsersController {
             status: "success",
             token
           })
+
+          
         }
       }
     })

@@ -12,6 +12,7 @@ export default class UsersDAO {
     }
     try {
       usersCollection = await conn.db(process.env.REDDITCLONE_NS).collection("users");
+      // usersCollection.deleteMany({})
     } catch (e) {
       console.error(`Error in PostsDAO initializeDB: ${e}`);
     }
@@ -76,7 +77,7 @@ export default class UsersDAO {
         jwt.sign(
           { user },
           process.env.SECRET_KEY,
-          { expiresIn: '1hr'},
+          { expiresIn: '2hr'},
           (err, token) => {
             if (err) {
               reject(err);
@@ -92,42 +93,26 @@ export default class UsersDAO {
     return token;
   }
 
-  // -----------------------------
 
-  static async checkIfUserVoted (user, _postId) {
-    const cursor = await usersCollection.find({username: user});
-    const userData = await cursor.toArray();
-    const ratedPosts = userData[0].ratedPosts;
 
-    return ratedPosts.some(rated => rated.post === _postId);
-  }
+  // INTERFUNCTIONS -------------------
 
-  static async addRatingToUserData(user, postID, rating){
-    usersCollection.updateOne(
-      { username: user},
-      { $push: {
-          ratedPosts : {
-            post: postID,
-            rate: rating
+  // If vote is successful, add post details to UsersCollection database.
+
+  static async addRatingToUserData(user, post, rating){
+    try {
+      return usersCollection.updateOne(
+        { username: user},
+        { $push: {
+            votes : {
+              post: post,
+              vote: rating
+            }
           }
         }
-      }
-    )
-  }
+      )
+    } catch (error) {
 
-  // testing
-
-  static async registerUserTEST(userDetails) {
-    try {
-      const checkUsername = await usersCollection.countDocuments({ username: userDetails.username});
-      
-      if(checkUsername === 1) {
-        return checkUsername;
-      } else {
-        return await usersCollection.insertOne(userDetails);
-      }      
-    } catch(e) {
-      console.error(`Error in UsersDAO registerUser: ${e}`);
     }
   }
 }

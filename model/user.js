@@ -6,7 +6,11 @@ const userSchema = mongoose.Schema({
     required: true
   },
   password: String,
-  dateCreated: Object
+  dateCreated: Object,
+  votes: [{
+    postID: Number,
+    vote: Boolean
+  }]
 });
 
 const User = mongoose.model("User", userSchema);

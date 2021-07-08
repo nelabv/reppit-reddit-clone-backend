@@ -1,6 +1,5 @@
-import { response } from "express";
 import mongodb from "mongodb";
-import Utility from "../api/utils.js";
+import UsersDAO from "./usersDAO.js";
 
 const ObjectId = mongodb.ObjectID;
 let threads;
@@ -113,9 +112,12 @@ export default class PostsDAO {
     let response;
     // Check if user has voted the same vote already
     if ((upvotesSearch.length > 0 && vote === true) || (downvotesSearch.length > 0 && vote === false)) { 
+      const user = await UsersDAO.addRatingToUserData(username, postID, vote);
+
       response = {
         status: "duplicate",
-        message: "DUPLICATE: User has voted the same vote on the same post. No changes were made."
+        message: "DUPLICATE: User has voted the same vote on the same post. No changes were made.",
+        user
       }
       return response;
     } else if (upvotesSearch.length > 0 && vote !== true) {
@@ -126,9 +128,13 @@ export default class PostsDAO {
           $push: { "votes.downvotes" : username }
         }
       ) 
+
+      const user = await UsersDAO.addRatingToUserData(username, postID, vote);
+
       response = {
         status: "change vote",
-        message: "VOTE CHANGE ( + to - ): User has existing record but requested to change vote."
+        message: "VOTE CHANGE ( + to - ): User has existing record but requested to change vote.",
+        user
       }
       return response;
     } 
@@ -142,25 +148,41 @@ export default class PostsDAO {
           $push: { "votes.upvotes" : username }
         }
       )  
+
+      const user = await UsersDAO.addRatingToUserData(username, postID, vote);
+
       response = {
         status: "change vote",
-        message: "VOTE CHANGE ( - to + ): User has existing record but requested to change vote."
+        message: "VOTE CHANGE ( - to + ): User has existing record but requested to change vote.",
+        user
       }
       return response;
     } else {
-      threads.updateOne(
-        { _id: ObjectId(postID)}, 
-        { 
-          $push: { [`votes.${array}`] : username },
-          $inc: {[`votes.totalVoteCount`]: 1}
+      try {
+          threads.updateOne(
+            { _id: ObjectId(postID)}, 
+            { 
+              $push: { [`votes.${array}`] : username },
+              $inc: {[`votes.totalVoteCount`]: 1}
+            }
+          )
+    
+          const user = await UsersDAO.addRatingToUserData(username, postID, vote);
+    
+          response = {
+            status: "added record",
+            message: "RECORD ADDED: User has no existing record on this post. Added user to votes array successfully.",
+            user
+          }
+
+          return response;
+        } catch (error) {
+          response = {
+            error: `An error occurred: ${error}`
+          }
+          return response;
         }
-      )
-      response = {
-        status: "added record",
-        message: "RECORD ADDED: User has no existing record on this post. Added user to votes array successfully."
-      }
-      return response;
-    }
+      } 
     
   
   }
@@ -188,31 +210,6 @@ export default class PostsDAO {
 
     const id = await handleSubmit(newPost);
     return id;
-  }
-
-  static async upvoteDownvote(rate, id) {
-    let retrievedPost;
-    const query = {
-      _id: ObjectId(id)
-    };
-
-    try {
-      let data = await threads.find(query);
-      retrievedPost = await data.toArray();
-
-      if (rate === true) {
-        const update = await threads.updateOne(query, {
-          $inc: { rating: 1}
-        })
-      } if (rate === false) {
-        const update = await threads.updateOne(query, {
-          $inc: { rating: -1}
-        })
-      }
-    } catch (e) {
-      console.error(`Error in PostsDAO upvoteDownvote: ${e}`);
-    }
-
   }
 
   static async deletePost(postId, userId) {
