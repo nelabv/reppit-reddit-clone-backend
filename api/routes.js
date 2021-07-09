@@ -5,6 +5,23 @@ import UsersController from "./users.controller.js";
 
 const router = express.Router();
 
+// ---------------
+// USER ROUTES
+// ---------------
+
+router.route("/get-user")
+  .get(Utility.verifyAndPassData, UsersController.APIfetchUserInformation)
+
+router.route("/register")
+  .post(UsersController.APIregisterUser)
+
+router.route("/login")
+  .post(UsersController.APIsignIn)
+
+// ---------------
+// MAIN THREAD ROUTES
+// ---------------
+
 router.route("/categories")
   .get(PostsController.APIgetCategories)
 
@@ -23,11 +40,5 @@ router.route("/posts")
 
 router.route("/comment/:id") 
   .put(Utility.verifyAndPassData, PostsController.APIaddComment)
-
-router.route("/register")
-  .post(UsersController.APIregisterUser)
-
-router.route("/login")
-  .post(UsersController.APIsignIn)
 
 export default router;

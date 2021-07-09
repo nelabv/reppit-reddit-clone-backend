@@ -59,4 +59,16 @@ export default class UsersController {
       }
     })
   }
+
+  static async APIfetchUserInformation(userData, req, res, next){
+    try {
+      const user = await UsersDAO.fetchUserInformation(userData.user.username);
+
+      res.json(user)
+    } catch(error) {
+      res.status(400).json({
+        error
+      })
+    }
+  }
 }

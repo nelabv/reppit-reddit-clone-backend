@@ -93,6 +93,19 @@ export default class UsersDAO {
     return token;
   }
 
+  static async fetchUserInformation(username) {
+    const query = {
+      username : username
+    }
+
+    try {
+      return await usersCollection.find(query).toArray();
+
+    } catch(e) {
+      console.error(`Error in PostsDAO getPostByID: ${e}`);
+    }
+  }
+
 
 
   // INTERFUNCTIONS -------------------
