@@ -112,15 +112,13 @@ export default class PostsDAO {
     let response;
     // Check if user has voted the same vote already
     if ((upvotesSearch.length > 0 && vote === true) || (downvotesSearch.length > 0 && vote === false)) { 
-      const user = await UsersDAO.addRatingToUserData(username, postID, vote);
-
       response = {
         status: "duplicate",
         message: "DUPLICATE: User has voted the same vote on the same post. No changes were made.",
         user
       }
       return response;
-    } else if (upvotesSearch.length > 0 && vote !== true) {
+    } else if (upvotesSearch.length > 0 && vote !== true) { 
       threads.updateOne(
         { _id: ObjectId(postID)}, 
         { 
@@ -129,7 +127,7 @@ export default class PostsDAO {
         }
       ) 
 
-      const user = await UsersDAO.addRatingToUserData(username, postID, vote);
+      const user = await UsersDAO.addRatingToUserData(username, postID, vote, true);
 
       response = {
         status: "change vote",
@@ -149,7 +147,7 @@ export default class PostsDAO {
         }
       )  
 
-      const user = await UsersDAO.addRatingToUserData(username, postID, vote);
+      const user = await UsersDAO.addRatingToUserData(username, postID, vote, true);
 
       response = {
         status: "change vote",
@@ -167,7 +165,7 @@ export default class PostsDAO {
             }
           )
     
-          const user = await UsersDAO.addRatingToUserData(username, postID, vote);
+          const user = await UsersDAO.addRatingToUserData(username, postID, vote, false);
     
           response = {
             status: "added record",

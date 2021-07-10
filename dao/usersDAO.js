@@ -112,20 +112,27 @@ export default class UsersDAO {
 
   // If vote is successful, add post details to UsersCollection database.
 
-  static async addRatingToUserData(user, post, rating){
-    try {
-      return usersCollection.updateOne(
+  static async addRatingToUserData(user, post, rating, DBaction){
+    // DBaction is a boolean whether there is need to pull or push to the UsersCollection.
+    if (DBaction === true) {
+      const removeVote = await usersCollection.updateOne(
         { username: user},
-        { $push: {
-            votes : {
-              post: post,
-              vote: rating
-            }
-          }
-        }
+        { $pull: { votes: { post: post } }}
       )
-    } catch (error) {
 
+      const addVote = await usersCollection.updateOne(
+        { username: user},
+        { $push: { votes : {post: post, vote: rating} }}
+      )
+
+      return addVote;
+    } else if (DBaction === false) {
+      const addVote = await usersCollection.updateOne(
+        { username: user},
+        { $push: { votes : {post: post, vote: rating} }}
+      )
+
+      return addVote;
     }
   }
 }
