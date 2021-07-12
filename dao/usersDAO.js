@@ -139,7 +139,7 @@ export default class UsersDAO {
         { $pull: { votes: { post: post } }}
       )
 
-      return addVote;
+      return removeVote;
     }
   }
 }

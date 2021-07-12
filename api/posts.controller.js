@@ -141,6 +141,7 @@ export default class PostsController {
   
       const results = await PostsDAO.castVote(postID, user, vote);
       
+      console.log(results);
       res.json(results);
     } catch (err) {
       res.status(400).json({

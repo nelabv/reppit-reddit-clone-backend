@@ -19,7 +19,19 @@ router.route("/login")
   .post(UsersController.APIsignIn)
 
 // ---------------
-// MAIN THREAD ROUTES
+// POST ACTIVITY ROUTES - all requests concerning actions on post threads
+// ---------------
+
+router.route("/posts")
+.put(Utility.verifyAndPassData, PostsController.APIcastVote)
+.post(Utility.verifyToken, PostsController.APIaddPost) 
+.delete(Utility.verifyToken, PostsController.APIdeletePost)
+
+router.route("/comment/:id") 
+.put(Utility.verifyAndPassData, PostsController.APIaddComment)
+
+// ---------------
+// MAIN THREAD ROUTES - all requests concerning post threads, etc
 // ---------------
 
 router.route("/categories")
@@ -32,13 +44,5 @@ router.route("/")
   .get(PostsController.APIgetPosts);
 router.route("/:id")
   .get(Utility.verifyToken, PostsController.APIgetPostByID);
-
-router.route("/posts")
-  .post(Utility.verifyToken, PostsController.APIaddPost) 
-  .put(Utility.verifyAndPassData, PostsController.APIcastVote)
-  .delete(Utility.verifyToken, PostsController.APIdeletePost)
-
-router.route("/comment/:id") 
-  .put(Utility.verifyAndPassData, PostsController.APIaddComment)
 
 export default router;

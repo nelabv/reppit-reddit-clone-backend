@@ -112,13 +112,21 @@ export default class PostsDAO {
     let response;
     // Check if user has voted the same vote already
     if ((upvotesSearch.length > 0 && vote === true) || (downvotesSearch.length > 0 && vote === false)) { 
+      threads.updateOne(
+        { _id: ObjectId(postID)}, 
+        { 
+          $pull: { [`votes.${array}`] : username },
+          $inc: {[`votes.totalVoteCount`]: -1}
+        }
+      )
+
       const user = await UsersDAO.addRatingToUserData(username, postID, vote, "unvote");
       
       response = {
         status: "unvote",
-        message: "UNVOTE: User unvoted on this post",
-        user
+        message: "UNVOTE: User unvoted on this post"
       }
+
       return response;
     } else if (upvotesSearch.length > 0 && vote !== true) { 
       threads.updateOne(
