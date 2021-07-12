@@ -133,6 +133,13 @@ export default class UsersDAO {
       )
 
       return addVote;
+    } else if (DBaction === "unvote") {
+      const removeVote = await usersCollection.updateOne(
+        { username: user},
+        { $pull: { votes: { post: post } }}
+      )
+
+      return addVote;
     }
   }
 }

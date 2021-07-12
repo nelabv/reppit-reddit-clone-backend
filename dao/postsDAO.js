@@ -112,9 +112,11 @@ export default class PostsDAO {
     let response;
     // Check if user has voted the same vote already
     if ((upvotesSearch.length > 0 && vote === true) || (downvotesSearch.length > 0 && vote === false)) { 
+      const user = await UsersDAO.addRatingToUserData(username, postID, vote, "unvote");
+      
       response = {
-        status: "duplicate",
-        message: "DUPLICATE: User has voted the same vote on the same post. No changes were made.",
+        status: "unvote",
+        message: "UNVOTE: User unvoted on this post",
         user
       }
       return response;
