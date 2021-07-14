@@ -210,6 +210,9 @@ export default class PostsDAO {
               { $inc : {"votes.totalVoteCount" : 1},
               $push: { "votes.upvotes" : author } }
             );
+
+            UsersDAO.addRatingToUserData(author, postId, true, false);
+            
             resolve(postId);
           }
         })
