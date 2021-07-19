@@ -37,9 +37,6 @@ router.route("/comment/:id")
 router.route("/categories")
   .get(PostsController.APIgetCategories)
 
-router.route("/posts-category")
-  .get(PostsController.APIgetPostsByCategory)
-
 router.route("/")
   .get(PostsController.APIgetPosts);
 router.route("/:id")

@@ -1,44 +1,22 @@
 import PostsDAO from "../dao/postsDAO.js";
-import UsersDAO from "../dao/usersDAO.js";
 import Post from "../model/post.js";
 
 export default class PostsController {
   static async APIgetPosts(req, res, next) {
     try {
-      let filters = {};
-  
-      if (req.query.flair) {
-        filters.flair = req.query.flair;
-      }
+      const filter = req.query.category;
+      console.log(filter);
 
-      const _results = await PostsDAO.fetchPosts({filters});
+      const _results = await PostsDAO.fetchPosts(filter);
 
       let response = {
-        filters: filters,
+        filters: filter,
         contents: _results
       }
 
       res.json(response);
     } catch (e) {
       console.error(`Error in PostsController APIgetPosts: ${e}`);
-    }
-  }
-
-  static async APIgetPostsByCategory(req, res, next) {
-    try {    
-      const category = req.body.category;
-
-      const results = await PostsDAO.getPostsByCategory(category);
-
-      res.json({
-        results
-      })
-    } catch (err) {
-      console.log(`Error in PostsController APIsetCategories: ${err}`);
-
-      res.status(400).json({
-        error: err
-      })
     }
   }
   

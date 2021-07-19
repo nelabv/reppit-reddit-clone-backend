@@ -18,18 +18,6 @@ export default class PostsDAO {
     }
   }
 
-  static async getPostsByCategory(_category) {
-    let data;
-    const query = { "category": { $eq: _category }}
-
-    try {
-      data = await threads.find(query);
-      return await data.toArray();
-    } catch(e) {
-      console.error(`Error in PostsDAO getPostByID: ${e}`);
-    }
-  }
-
   static async getCategories() {
     let response = [];
     
@@ -42,14 +30,22 @@ export default class PostsDAO {
     }
   }
 
-  static async fetchPosts({
-    filters = null
-  } = {}) {
+  static async fetchPosts(filter) {
     let query; 
+    let cursor; 
+
+    if (filter) {
+      query = { category: `${filter}`}
+    }
+
+    cursor = await threads.find(query);
+    return await cursor.toArray();
     
-    if (filters) {
-      if ("flair" in filters) {
-        query = { "flair": { $eq: filters["flair"] } }
+/*     let query; 
+    
+    if (filter) {
+      if ("category" in filters) {
+        query = { "category": { $eq: filters["category"] } }
       }
     }
 
@@ -60,7 +56,7 @@ export default class PostsDAO {
       return await cursor.toArray();
     } catch (e) {
       console.error(`Error in PostsDAO fetchPosts: ${e}`);
-    }
+    } */
   }
 
   static async getPostByID(id){
