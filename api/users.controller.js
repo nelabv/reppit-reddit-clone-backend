@@ -39,12 +39,15 @@ export default class UsersController {
 
     UsersDAO.validateUser(username, password).then(async function(result){
       if (result === false) {
-        res.status(400).json({ error: "User not found!" });
+        res.status(400).json({ 
+          status: "not found",
+          error: "User not found/registered!" });
       } else if (result === true) {
         const passwordValidity = await UsersDAO.validatePassword(username, password);
   
         if (passwordValidity === false) {
           res.status(400).json({
+            status: "incorrect",
             error: "Incorrect password!"
           })
         } else if (passwordValidity === true) {
@@ -53,8 +56,6 @@ export default class UsersController {
             status: "success",
             token
           })
-
-          
         }
       }
     })

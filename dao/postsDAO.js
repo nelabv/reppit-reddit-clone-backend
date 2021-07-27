@@ -40,23 +40,6 @@ export default class PostsDAO {
 
     cursor = await threads.find(query);
     return await cursor.toArray();
-    
-/*     let query; 
-    
-    if (filter) {
-      if ("category" in filters) {
-        query = { "category": { $eq: filters["category"] } }
-      }
-    }
-
-    let cursor; 
-    
-    try {
-      cursor = await threads.find(query);
-      return await cursor.toArray();
-    } catch (e) {
-      console.error(`Error in PostsDAO fetchPosts: ${e}`);
-    } */
   }
 
   static async getPostByID(id){
