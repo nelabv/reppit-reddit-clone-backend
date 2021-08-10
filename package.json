@@ -5,6 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "postinstall": "npm run build",
     "start": "nodemon index.js"
   },
   "keywords": [],
