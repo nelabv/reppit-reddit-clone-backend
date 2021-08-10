@@ -10,6 +10,7 @@ import PostsCheckers from "./dao/postsDAO_checker_functions.js";
 dotenv.config();
 
 const MongoClient = mongodb.MongoClient;
+const port = process.env.PORT || 5000;
 
 // vvvv This is where the connection occurs
 
@@ -28,7 +29,7 @@ MongoClient.connect(process.env.REDDITCLONE_DB_URI, {
   await PostsCheckers.initializeDB(client);
   await UsersDAO.initializeDB(client);
 
-  app.listen(process.env.PORT || 5000, () => { // Specifying the routes made
+  app.listen(port, () => { // Specifying the routes made
     console.log(`Listening to the port ${port}`);
     // Now connected to the database
   })
