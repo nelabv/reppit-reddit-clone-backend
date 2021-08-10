@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "postinstall": "npm run build",
-    "start": "nodemon index.js"
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
