@@ -10,8 +10,7 @@ import PostsCheckers from "./dao/postsDAO_checker_functions.js";
 dotenv.config();
 
 const MongoClient = mongodb.MongoClient;
-const port = process.env.PORT || 5000;
-const host = '0.0.0.0';
+const port = process.env.PORT || 8080;
 
 MongoClient.connect(process.env.REDDITCLONE_DB_URI, {
   useNewUrlParser: true
@@ -26,7 +25,7 @@ MongoClient.connect(process.env.REDDITCLONE_DB_URI, {
   await PostsCheckers.initializeDB(client);
   await UsersDAO.initializeDB(client);
 
-  app.listen(port, host, () => {
+  app.listen(port, () => {
     console.log(`CONNECTION SUCCESSFUL: Listening to the port ${port}`);
   })
 })
