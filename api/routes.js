@@ -9,6 +9,10 @@ const router = express.Router();
 // USER ROUTES
 // ---------------
 
+router.route('/', (req, res) => {   
+  res.status(200).send({message: "Hello!"}); 
+});
+
 router.route("/get-user")
   .get(Utility.verifyAndPassData, UsersController.APIfetchUserInformation)
 
