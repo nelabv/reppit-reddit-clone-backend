@@ -13,7 +13,8 @@ const MongoClient = mongodb.MongoClient;
 const port = process.env.PORT || 8080;
 
 MongoClient.connect(process.env.REDDITCLONE_DB_URI, {
-  useNewUrlParser: true
+  useNewUrlParser: true,
+  useUnifiedTopology: true
 })
 .catch(err => {
   console.error(err.stack);
