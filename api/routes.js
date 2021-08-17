@@ -44,6 +44,6 @@ router.route("/categories")
 router.route("/")
   .get(PostsController.APIgetPosts);
 router.route("/:id")
-  .get(Utility.verifyToken, PostsController.APIgetPostByID);
+  .get(PostsController.APIgetPostByID);
 
 export default router;
