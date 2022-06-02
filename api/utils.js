@@ -20,7 +20,7 @@ export default class Utility {
       })
     } else {
       res.status(403).json({
-        error: "Not logged in"
+        error: "Not logged in. Please log in to continue."
       })
     }
   }

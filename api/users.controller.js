@@ -7,7 +7,10 @@ export default class UsersController {
     try {
       bcrypt.hash(req.body.password, 10, async function(error, hash) {
         if (error) {
-          console.error(`Error in hashing password: ${e}`);
+          res.status(400).json({ 
+            status: "Error in hashing password!",
+            error
+          })
         } else {
           const user = new User({
             username: req.body.username,
@@ -38,20 +41,21 @@ export default class UsersController {
     const password = req.body.password;
 
     UsersDAO.validateUser(username, password).then(async function(result){
-      if (result === false) {
+      if (!result) {
         res.status(400).json({ 
           status: "not found",
           error: "User not found/registered!" });
-      } else if (result === true) {
+      } else if (result) {
         const passwordValidity = await UsersDAO.validatePassword(username, password);
   
-        if (passwordValidity === false) {
+        if (!passwordValidity) {
           res.status(400).json({
             status: "incorrect",
             error: "Incorrect password!"
           })
-        } else if (passwordValidity === true) {
+        } else if (passwordValidity) {
           const token = await UsersDAO.grantAccess(username);
+
           res.status(200).json({
             status: "success",
             token

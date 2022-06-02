@@ -4,7 +4,7 @@ import Post from "../model/post.js";
 export default class PostsController {
   static async APIgetPosts(req, res, next) {
     try {
-      const filter = req.query.category;
+      const filter = req.query.category; // /posts?category=random
 
       const _results = await PostsDAO.fetchPosts(filter);
 
@@ -15,7 +15,10 @@ export default class PostsController {
 
       res.json(response);
     } catch (e) {
-      console.error(`Error in PostsController APIgetPosts: ${e}`);
+      res.status(400).json({ 
+        error: e,
+        status: "Error in fetching posts."
+      });
     }
   }
   
@@ -55,7 +58,7 @@ export default class PostsController {
         author: req.body.username,
         body: req.body.body,
         datePosted: new Date(),
-        category: req.body.flair,
+        category: req.body.category,
         comments: [],
         votes: {
           totalVoteCount: 0, 

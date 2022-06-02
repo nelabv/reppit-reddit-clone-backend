@@ -5,13 +5,13 @@ import UsersController from "./users.controller.js";
 
 const router = express.Router();
 
-// ---------------
-// USER ROUTES
-// ---------------
-
-router.route('/', (req, res) => {   
-  res.status(200).send({message: "Reddit clone API. nbv2021"}); 
-});
+router.route("/")  
+  .get((req, res) => {
+    res.json({
+      message: "Reddit clone API",
+      author: "nbv2021"
+    })
+  });
 
 router.route("/register")
   .post(UsersController.APIregisterUser);
@@ -21,7 +21,7 @@ router.route("/login")
 
 router.route("/posts") // Fetch all posts
   .get(PostsController.APIgetPosts)
-  .post(Utility.verifyToken, PostsController.APIaddPost) ;
+  .post(Utility.verifyToken, PostsController.APIaddPost);
 
 router.route("/posts")
   .put(Utility.verifyAndPassData, PostsController.APIcastVote);
