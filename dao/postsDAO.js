@@ -214,11 +214,11 @@ export default class PostsDAO {
     }
   }
 
-  static async addComment(commentDoc, postId) {
+  static async addComment(commentBody, postId) {
     try {
       const addCommentReq = await threads.updateOne(
         { _id: ObjectId(postId) },
-        { $push: { comments: commentDoc } }
+        { $push: { comments: commentBody } }
       )
 
       return addCommentReq;

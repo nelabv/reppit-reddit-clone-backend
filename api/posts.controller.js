@@ -25,6 +25,7 @@ export default class PostsController {
   static async APIgetCategories(req, res, next) {
     try {
       let categories = await PostsDAO.getCategories();
+      
       res.status(200).json({
         categories
       });
@@ -84,11 +85,14 @@ export default class PostsController {
 
   static async APIdeletePost(req, res, next) {
     try {
-      const postID = req.body.postID;
+      const postID = req.params.id;
 
       const deletePost = await PostsDAO.deletePost(postID);
 
-      res.status(200).json({ status: "Post deleted!"});
+      res.status(200).json({ 
+        status: "Post deleted!",
+        deletePost
+      });
     } catch(err) {
       console.error(`Error in PostsController APIdeletePost: ${err}`);
       
@@ -100,16 +104,22 @@ export default class PostsController {
 
   static async APIaddComment(userData, req, res, next) {
     try {
-      const commentDocument = {
+      const commentBody = {
         user: userData.user.username,
         body: req.body.body,
         date: new Date() 
       }
 
-      const addComment = await PostsDAO.addComment(commentDocument, req.body.postID);
-      res.json({ status: "Comment submitted!"});
+      const addComment = await PostsDAO.addComment(commentBody, req.params.id);
+      res.status(200).json({ 
+        status: "Comment submitted!",
+        addComment
+      });
+
     } catch(e) {
-      console.error(`Error in PostsController APIaddComment: ${e}`);
+      res.status(400).json({
+        error: `Error in PostsController APIaddComment: ${e}`
+      })
     }
   }
 
@@ -121,8 +131,7 @@ export default class PostsController {
   
       const results = await PostsDAO.castVote(postID, user, vote);
       
-      console.log(results);
-      res.json(results);
+      res.status(200).json(results);
     } catch (err) {
       res.status(400).json({
         error: `Error in PostsController APIcastVote: Unable to cast vote: ${err}`
