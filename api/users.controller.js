@@ -33,7 +33,7 @@ export default class UsersController {
     }
   }
 
-  static async APIsignIn(req, res) {
+  static async APIlogin(req, res) {
     const username = req.body.username;
     const password = req.body.password;
 

@@ -5,7 +5,6 @@ export default class PostsController {
   static async APIgetPosts(req, res, next) {
     try {
       const filter = req.query.category;
-      console.log(filter);
 
       const _results = await PostsDAO.fetchPosts(filter);
 
