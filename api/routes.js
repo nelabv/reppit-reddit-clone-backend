@@ -36,7 +36,7 @@ router.route("/posts/comment/:id") // /posts/comment/123456789
 router.route("/posts/categories")
   .get(PostsController.APIgetCategories)
 
-  /* router.route("/get-user")
-  .get(Utility.verifyAndPassData, UsersController.APIfetchUserInformation) */
+/* router.route("/get-user")
+  .get(Utility.verifyAndPassData, UsersController.APIfetchUserInformation) */ // TO WRITE THIS ON MONDAY
 
 export default router;

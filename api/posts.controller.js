@@ -6,14 +6,9 @@ export default class PostsController {
     try {
       const filter = req.query.category; // /posts?category=random
 
-      const _results = await PostsDAO.fetchPosts(filter);
+      const response = await PostsDAO.fetchPosts(filter);
 
-      let response = {
-        filters: filter,
-        contents: _results
-      }
-
-      res.json(response);
+      res.status(200).json(response);
     } catch (e) {
       res.status(400).json({ 
         error: e,
