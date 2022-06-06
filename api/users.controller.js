@@ -55,10 +55,12 @@ export default class UsersController {
           })
         } else if (passwordValidity) {
           const token = await UsersDAO.grantAccess(username);
+          const userInfo = await UsersDAO.fetchUserInformation(username);
 
           res.status(200).json({
             status: "success",
-            token
+            token,
+            id: userInfo[0]._id
           })
         }
       }

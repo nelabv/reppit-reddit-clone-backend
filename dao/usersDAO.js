@@ -66,6 +66,18 @@ export default class UsersDAO {
     return res;
   }
 
+  static async fetchUserInformation(username) {
+    const query = {
+      username : username
+    }
+
+    try {
+      return await usersCollection.find(query).toArray();
+    } catch(e) {
+      console.error(`Error in PostsDAO getPostByID: ${e}`);
+    }
+  }
+
   static async grantAccess(_username) {
     const user = {
       username: _username,
@@ -91,19 +103,6 @@ export default class UsersDAO {
 
     const token = await generateToken(user);
     return token;
-  }
-
-  static async fetchUserInformation(username) {
-    const query = {
-      username : username
-    }
-
-    try {
-      return await usersCollection.find(query).toArray();
-
-    } catch(e) {
-      console.error(`Error in PostsDAO getPostByID: ${e}`);
-    }
   }
 
 
