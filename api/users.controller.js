@@ -3,6 +3,20 @@ import bcrypt from "bcrypt";
 import User from "../model/user.js";
 
 export default class UsersController {
+  static async APIfetchUserInformation(req, res, next){
+    const username = req.params.username;
+
+    try {
+      const user = await UsersDAO.fetchUserInformation(username);
+
+      res.status(200).json(user);
+    } catch(error) {
+      res.status(400).json({
+        error
+      })
+    }
+  }
+
   static async APIregisterUser(req, res) {
     try {
       bcrypt.hash(req.body.password, 10, async function(error, hash) {
@@ -55,27 +69,14 @@ export default class UsersController {
           })
         } else if (passwordValidity) {
           const token = await UsersDAO.grantAccess(username);
-          const userInfo = await UsersDAO.fetchUserInformation(username);
 
           res.status(200).json({
             status: "success",
             token,
-            id: userInfo[0]._id
+            username
           })
         }
       }
     })
-  }
-
-  static async APIfetchUserInformation(userData, req, res, next){
-    try {
-      const user = await UsersDAO.fetchUserInformation(userData.user.username);
-
-      res.status(200).json(user);
-    } catch(error) {
-      res.status(400).json({
-        error
-      })
-    }
   }
 }
