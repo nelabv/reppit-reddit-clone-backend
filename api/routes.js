@@ -20,23 +20,23 @@ router.route("/login")
   .post(UsersController.APIlogin);
 
 router.route("/posts") // Fetch all posts
-  .get(PostsController.APIgetPosts) // /posts?category=random
+  .get(PostsController.APIgetPosts)
   .post(Utility.verifyToken, PostsController.APIaddPost);
 
-router.route("/posts")
+router.route("/comment/submit/:id") // /posts/comment/123456789
+  .put(Utility.verifyAndPassData, PostsController.APIaddComment);
+
+router.route("/posts/vote")
   .put(Utility.verifyAndPassData, PostsController.APIcastVote);
 
-router.route("/posts/:id") // req.params.id
+router.route("/posts/:id/") // req.params.id
   .get(PostsController.APIgetPostByID)
   .delete(Utility.verifyToken, PostsController.APIdeletePost);
 
-router.route("/posts/comment/:id") // /posts/comment/123456789
-  .put(Utility.verifyAndPassData, PostsController.APIaddComment);
-
-router.route("/posts/categories")
+router.route("/categories")
   .get(PostsController.APIgetCategories);
-
+  
 router.route("/users/:username/")
-  .get(UsersController.APIfetchUserInformation)
+  .get(UsersController.APIfetchUserInformation);
 
 export default router;

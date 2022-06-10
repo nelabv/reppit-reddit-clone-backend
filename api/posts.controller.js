@@ -100,7 +100,7 @@ export default class PostsController {
   static async APIaddComment(userData, req, res, next) {
     try {
       const commentBody = {
-        user: userData.user.username,
+        user: req.body.username,
         body: req.body.body,
         date: new Date() 
       }
